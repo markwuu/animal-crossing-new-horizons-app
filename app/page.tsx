@@ -7,6 +7,9 @@ export default function Home() {
 		hour: '2-digit',
 		minute: '2-digit',
 	});
+	const localTimeHour = date.toLocaleTimeString([], {
+		hour: '2-digit',
+	});
 	const monthIndex = date.getMonth();
 
 	return (
@@ -18,7 +21,7 @@ export default function Home() {
 				<p className="pb-3 text-center">
 					{monthName} {localTime}
 				</p>
-				<FishList monthNumber={monthIndex} localTime={localTime} />
+				<FishList monthNumber={monthIndex} localTime={localTimeHour} />
 			</main>
 		</div>
 	);
