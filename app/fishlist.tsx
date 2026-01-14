@@ -163,13 +163,21 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 				count += 1;
 			}
 		});
+		const percentage = (count / fishCount) * 100;
 
 		return (
 			<p className="italic">
-				<span className="font-semibold">
-					{((count / fishCount) * 100).toFixed(2)}%
-				</span>{' '}
-				Complete
+				{percentage === 100 ? (
+					<>
+						🎉 <span className="font-semibold">{percentage.toFixed(2)}% </span>
+						Complete 🎉
+					</>
+				) : (
+					<>
+						<span className="font-semibold">{percentage.toFixed(2)}% </span>
+						Complete
+					</>
+				)}
 			</p>
 		);
 	};
