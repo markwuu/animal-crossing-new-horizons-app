@@ -1,18 +1,38 @@
 'use client';
 
-import { useState, useEffect, FC } from 'react';
-import axios from 'axios';
-import { times } from './lib/definitions';
+import { useState, FC, useEffect } from 'react';
+import { initialFishObj, times } from './lib/definitions';
 
 interface ChildProps {
 	monthNumber: number;
 	localTime: string;
 }
 
+const createFishObject = () => {
+	try {
+		if (typeof window !== 'undefined') {
+			const storedFishObj = JSON.parse(localStorage.getItem('acnh:fish'));
+			if (storedFishObj) {
+				const fishObj = initialFishObj.map((fish, i) => {
+					fish.checked = storedFishObj[i].checked;
+					return fish;
+				});
+				return storedFishObj ? fishObj : initialFishObj;
+			} else {
+				return initialFishObj;
+			}
+		} else {
+			return null;
+		}
+	} catch (error) {
+		console.error('Local storage error:', error);
+	}
+};
+
 export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
-	const apiKey = '';
+	const [isClient, setIsClient] = useState(false);
 	const monthIndex = monthNumber + 1;
-	const [fish, setFish] = useState([]);
+	const [fish, setFish] = useState(createFishObject);
 	const fourAMtoNinePM = times.slice(4, 21);
 	const nineAMtofourPM = times.slice(9, 16);
 	const ninePMtoElevenPM = times.slice(21, 24);
@@ -20,26 +40,8 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const ninePMtoFourAM = ninePMtoElevenPM.concat(twelveAMtoFourAM);
 
 	useEffect(() => {
-		const fetchFish = async () => {
-			try {
-				const response = await axios.get('https://api.nookipedia.com/nh/fish', {
-					headers: {
-						'X-API-Key': apiKey,
-						'Content-Type': 'application/json',
-					},
-				});
-				const fish = response.data.map((fish) => {
-					fish.display = true;
-					fish.checked = false;
-					return fish;
-				});
-				setFish(fish);
-			} catch (err) {
-				console.log('an error occurred', err);
-			}
-		};
-
-		fetchFish();
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setIsClient(true);
 	}, []);
 
 	const handleClick = (filter: string) => {
@@ -95,6 +97,26 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		}
 	};
 
+	const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const { value } = event.target;
+		setFish((prev) => {
+			const fishObject = JSON.stringify(
+				prev.map((fish, i) => {
+					if (fish.name === value) fish.checked = true;
+					return { id: i + 1, label: fish.name, checked: fish.checked };
+				}),
+			);
+			localStorage.setItem('acnh:fish', fishObject);
+
+			return prev.map((fish) => {
+				if (fish.name === value) fish.checked = true;
+				return fish;
+			});
+		});
+	};
+
+	if (!isClient) return null;
+
 	return (
 		<div>
 			<h2 className="text-center text-2xl pb-2">Fish</h2>
@@ -126,7 +148,15 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 								className="flex items-center border-2 border-white px-3 py-3"
 								key={fish['name']}
 							>
-								<input type="checkbox" className={`h-5 w-5`} />
+								<input
+									type="checkbox"
+									className={`h-5 w-5`}
+									id={fish.name}
+									value={fish.name}
+									name={fish.name}
+									checked={fish.checked}
+									onChange={(e) => handleCheckboxChange(e)}
+								/>
 								<p className="pl-2 text-sm">{fish['name']}</p>
 							</div>
 						);
