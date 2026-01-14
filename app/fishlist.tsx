@@ -40,6 +40,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const [isClient, setIsClient] = useState(false);
 	const [fish, setFish] = useState(createFishObject);
 	const [activeButton, setActiveButton] = useState<string>('all');
+	const [fishCount, setFishCount] = useState(initialFishObj.length);
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
@@ -55,6 +56,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 					return fish;
 				});
 			});
+			setFishCount(initialFishObj.length);
 		}
 
 		if (filter === 'month') {
@@ -67,6 +69,12 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 					return fish;
 				});
 			});
+
+			const monthFishCount = fish.reduce((acc, curr) => {
+				const availableTimes = curr['north']['times_by_month'][monthIndex];
+				return availableTimes !== 'NA' ? acc + 1 : acc;
+			}, 0);
+			setFishCount(monthFishCount);
 		}
 
 		if (filter === 'current') {
@@ -99,6 +107,23 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 					return fish;
 				});
 			});
+
+			const dailyFishCount = fish.reduce((acc, curr) => {
+				const availableTimes = curr['north']['times_by_month'][monthIndex];
+				if (
+					availableTimes === 'All day' ||
+					(availableTimes === '4 AM – 9 PM' &&
+						fourAMtoNinePM.includes(localTime)) ||
+					(availableTimes === '9 AM – 4 PM' &&
+						nineAMtofourPM.includes(localTime)) ||
+					(availableTimes === '9 PM – 4 AM' &&
+						ninePMtoFourAM.includes(localTime))
+				) {
+					return acc + 1;
+				}
+				return acc;
+			}, 0);
+			setFishCount(dailyFishCount);
 		}
 	};
 
@@ -134,10 +159,19 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const percentComplete = (fish) => {
 		let count = 0;
 		fish.map((fish) => {
-			if (fish.checked) count += 1;
+			if (fish.checked && fish.display) {
+				count += 1;
+			}
 		});
 
-		return <p>{((count / fish.length) * 100).toFixed(2)}% Complete</p>;
+		return (
+			<p className="italic">
+				<span className="font-semibold">
+					{((count / fishCount) * 100).toFixed(2)}%
+				</span>{' '}
+				Complete
+			</p>
+		);
 	};
 
 	const activeButtonClass =
