@@ -18,7 +18,7 @@ export default function Home() {
 				<h1 className="flex flex-col pb-2 text-center text-2xl uppercase font-bold tracking-tight font-mono">
 					Animal Crossing New Horizons: Fish
 				</h1>
-				<p className="pb-3 text-center text-2xl">
+				<p className="pb-2 text-center text-2xl">
 					{monthName}, {localTime}
 				</p>
 				<FishList monthNumber={monthIndex} localTime={localTimeHour} />
