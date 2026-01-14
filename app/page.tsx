@@ -15,11 +15,11 @@ export default function Home() {
 	return (
 		<div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black">
 			<main className="flex min-h-screen w-full max-w-3xl flex-col py-15 px-4 bg-white dark:bg-black">
-				<h1 className="flex flex-col pb-3 text-center text-2xl uppercase font-bold tracking-tight font-mono">
-					Animal Crossing New Horizons
+				<h1 className="flex flex-col pb-2 text-center text-2xl uppercase font-bold tracking-tight font-mono">
+					Animal Crossing New Horizons: Fish
 				</h1>
-				<p className="pb-3 text-center">
-					{monthName} {localTime}
+				<p className="pb-3 text-center text-2xl">
+					{monthName}, {localTime}
 				</p>
 				<FishList monthNumber={monthIndex} localTime={localTimeHour} />
 			</main>
