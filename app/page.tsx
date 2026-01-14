@@ -2,15 +2,23 @@ import { FishList } from './fishlist';
 
 export default function Home() {
 	const date = new Date();
-	const monthName = date.toLocaleString('default', { month: 'long' });
-	const localTime = date.toLocaleTimeString([], {
-		hour: '2-digit',
-		minute: '2-digit',
-	});
-	const localTimeHour = date.toLocaleTimeString([], {
-		hour: '2-digit',
-	});
-	const monthIndex = date.getMonth();
+	const monthName = new Intl.DateTimeFormat(navigator.language, {
+		month: 'long',
+	}).format(date);
+
+	const localTime = new Intl.DateTimeFormat('en-US', {
+		hour: 'numeric',
+		minute: 'numeric',
+		hour12: true,
+	}).format(date);
+
+	const localTimeHour = new Intl.DateTimeFormat('en-US', {
+		hour: 'numeric',
+	}).format(date);
+
+	const monthIndex = new Intl.DateTimeFormat('en-US', {
+		month: '2-digit',
+	}).format(date);
 
 	return (
 		<div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -21,7 +29,7 @@ export default function Home() {
 				<p className="pb-2 text-center text-2xl">
 					{monthName}, {localTime}
 				</p>
-				<FishList monthNumber={monthIndex} localTime={localTimeHour} />
+				<FishList monthNumber={Number(monthIndex)} localTime={localTimeHour} />
 			</main>
 		</div>
 	);
