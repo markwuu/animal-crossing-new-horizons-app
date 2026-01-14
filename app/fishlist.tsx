@@ -30,14 +30,16 @@ const createFishObject = () => {
 };
 
 export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
-	const [isClient, setIsClient] = useState(false);
 	const monthIndex = monthNumber + 1;
-	const [fish, setFish] = useState(createFishObject);
 	const fourAMtoNinePM = times.slice(4, 21);
 	const nineAMtofourPM = times.slice(9, 16);
 	const ninePMtoElevenPM = times.slice(21, 24);
 	const twelveAMtoFourAM = times.slice(0, 4);
 	const ninePMtoFourAM = ninePMtoElevenPM.concat(twelveAMtoFourAM);
+
+	const [isClient, setIsClient] = useState(false);
+	const [fish, setFish] = useState(createFishObject);
+	const [activeButton, setActiveButton] = useState<string>('all');
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
@@ -46,6 +48,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 
 	const handleClick = (filter: string) => {
 		if (filter === 'all') {
+			setActiveButton('all');
 			setFish((prev) => {
 				return prev?.map((fish) => {
 					fish.display = true;
@@ -55,6 +58,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		}
 
 		if (filter === 'month') {
+			setActiveButton('month');
 			setFish((prev) => {
 				return prev?.map((fish) => {
 					fish.display = true;
@@ -66,6 +70,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		}
 
 		if (filter === 'current') {
+			setActiveButton('current');
 			setFish((prev) => {
 				return prev?.map((fish) => {
 					fish.display = false;
@@ -100,47 +105,78 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { value } = event.target;
 		setFish((prev) => {
-			const fishObject = JSON.stringify(
-				prev.map((fish, i) => {
-					if (fish.name === value) fish.checked = true;
+			const updatedFishObj = prev.map((fish) => {
+				if (fish.name === value) {
+					fish.checked = !fish.checked;
+				}
+				return fish;
+			});
+
+			// store fish obj in localstorage to save user input
+			const storedFishObj = JSON.stringify(
+				updatedFishObj.map((fish, i) => {
+					if (fish.name === value) {
+						if (fish.checked === false) {
+							fish.checked = false;
+						} else {
+							fish.checked = true;
+						}
+					}
 					return { id: i + 1, label: fish.name, checked: fish.checked };
 				}),
 			);
-			localStorage.setItem('acnh:fish', fishObject);
+			localStorage.setItem('acnh:fish', storedFishObj);
 
-			return prev.map((fish) => {
-				if (fish.name === value) fish.checked = true;
-				return fish;
-			});
+			return updatedFishObj;
 		});
 	};
+
+	const percentComplete = (fish) => {
+		let count = 0;
+		fish.map((fish) => {
+			if (fish.checked) count += 1;
+		});
+
+		return <p>{((count / fish.length) * 100).toFixed(2)}% Complete</p>;
+	};
+
+	const activeButtonClass =
+		'px-7 py-1.5 my-1 border-3 border-[#4794ed] rounded w-30 tracking-wider text-[#4794ed]';
+	const inactiveButtonClass =
+		'px-7 py-1.5 my-1 border-3 border-gray-300 rounded w-30 tracking-wider';
 
 	if (!isClient) return null;
 
 	return (
 		<div>
-			<h2 className="text-center text-2xl pb-2">Fish</h2>
+			<div className="text-center pb-2">{percentComplete(fish)}</div>
 			<div className="flex justify-center gap-5">
 				<button
 					onClick={() => handleClick('all')}
-					className="px-7 py-1.5 my-1 border-3 border-gray-300 rounded"
+					className={
+						activeButton === 'all' ? activeButtonClass : inactiveButtonClass
+					}
 				>
-					All Fish
+					All fish
 				</button>
 				<button
 					onClick={() => handleClick('month')}
-					className="px-7 py-1.5 my-1 border-3 border-gray-300 rounded"
+					className={
+						activeButton === 'month' ? activeButtonClass : inactiveButtonClass
+					}
 				>
 					Monthly
 				</button>
 				<button
 					onClick={() => handleClick('current')}
-					className="px-7 py-1.5 my-1 border-3 border-gray-300 rounded"
+					className={
+						activeButton === 'current' ? activeButtonClass : inactiveButtonClass
+					}
 				>
 					Current
 				</button>
 			</div>
-			<div className="pt-6 grid grid-cols-4">
+			<div className="pt-4 grid grid-cols-4">
 				{fish?.map((fish) => {
 					if (fish.display === true) {
 						return (
