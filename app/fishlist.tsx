@@ -63,16 +63,23 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 			setActiveButton('all');
 			setFish((prev) => {
 				return prev?.map((fish) => {
-					fish.display = true;
+					if (fish.location === selectedValue) {
+						fish.display = true;
+					} else {
+						fish.display = false;
+					}
+
+					if (selectedValue === 'Select') fish.display = true;
 					return fish;
 				});
 			});
-			setFishCount(initialFishObj.length);
+			setFishCount(initialFishObj.length); //todo update correct count
 		}
 
 		if (filter === 'month') {
 			setActiveButton('month');
 			setFish((prev) => {
+				// todo handle drop down
 				return prev?.map((fish) => {
 					fish.display = true;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
@@ -91,6 +98,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		if (filter === 'now') {
 			setActiveButton('now');
 			setFish((prev) => {
+				// todo handle drop down
 				return prev?.map((fish) => {
 					fish.display = false;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
