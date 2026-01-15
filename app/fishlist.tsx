@@ -79,11 +79,20 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		if (filter === 'month') {
 			setActiveButton('month');
 			setFish((prev) => {
-				// todo handle drop down
 				return prev?.map((fish) => {
-					fish.display = true;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
-					if (availableTimes === 'NA') fish.display = false;
+
+					if (fish.location === selectedValue && availableTimes !== 'NA') {
+						fish.display = true;
+					} else {
+						fish.display = false;
+					}
+
+					if (selectedValue === 'Select') {
+						fish.display = true;
+						const availableTimes = fish['north']['times_by_month'][monthIndex];
+						if (availableTimes === 'NA') fish.display = false;
+					}
 					return fish;
 				});
 			});
@@ -92,7 +101,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 				const availableTimes = curr['north']['times_by_month'][monthIndex];
 				return availableTimes !== 'NA' ? acc + 1 : acc;
 			}, 0);
-			setFishCount(monthFishCount);
+			setFishCount(monthFishCount); //todo update correct count
 		}
 
 		if (filter === 'now') {
@@ -100,34 +109,68 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 			setFish((prev) => {
 				// todo handle drop down
 				return prev?.map((fish) => {
-					fish.display = false;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
+					fish.display = false;
 
 					if (availableTimes === 'NA') fish.display = false;
-					if (availableTimes === 'All day') fish.display = true;
+					if (availableTimes === 'All day' && fish.location === selectedValue)
+						fish.display = true;
 					if (
 						availableTimes === '4 AM – 9 PM' &&
-						fourAMtoNinePM.includes(localTime)
+						fourAMtoNinePM.includes(localTime) &&
+						fish.location === selectedValue
 					) {
 						fish.display = true;
 					}
 					if (
 						availableTimes === '4 PM – 9 AM' &&
-						fourPMtoNineAM.includes(localTime)
+						fourPMtoNineAM.includes(localTime) &&
+						fish.location === selectedValue
 					) {
 						fish.display = true;
 					}
 					if (
 						availableTimes === '9 AM – 4 PM' &&
-						nineAMtofourPM.includes(localTime)
+						nineAMtofourPM.includes(localTime) &&
+						fish.location === selectedValue
 					) {
 						fish.display = true;
 					}
 					if (
 						availableTimes === '9 PM – 4 AM' &&
-						ninePMtoFourAM.includes(localTime)
+						ninePMtoFourAM.includes(localTime) &&
+						fish.location === selectedValue
 					) {
 						fish.display = true;
+					}
+
+					if (selectedValue === 'Select') {
+						if (availableTimes === 'NA') fish.display = false;
+						if (availableTimes === 'All day') fish.display = true;
+						if (
+							availableTimes === '4 AM – 9 PM' &&
+							fourAMtoNinePM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '4 PM – 9 AM' &&
+							fourPMtoNineAM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '9 AM – 4 PM' &&
+							nineAMtofourPM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '9 PM – 4 AM' &&
+							ninePMtoFourAM.includes(localTime)
+						) {
+							fish.display = true;
+						}
 					}
 
 					return fish;
@@ -149,7 +192,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 				}
 				return acc;
 			}, 0);
-			setFishCount(dailyFishCount);
+			setFishCount(dailyFishCount); //todo update correct count
 		}
 	};
 
@@ -243,8 +286,8 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 
 				//handles current functionality
 				if (activeButton === 'now') {
-					fish.display = false;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
+					fish.display = false;
 
 					if (availableTimes === 'NA') fish.display = false;
 					if (availableTimes === 'All day' && fish.location === value)
