@@ -36,11 +36,21 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const ninePMtoElevenPM = times.slice(21, 24);
 	const twelveAMtoFourAM = times.slice(0, 4);
 	const ninePMtoFourAM = ninePMtoElevenPM.concat(twelveAMtoFourAM);
+	const fishEmoji = {
+		Pond: '💧',
+		River: '💦',
+		'River (mouth)': '👄 + 💦',
+		'River (clifftop)': '🏔️ + 💦',
+		Pier: '⚓️',
+		Sea: '🌊',
+		'Sea (raining)': '🌧️ + 🌊',
+	};
 
 	const [isClient, setIsClient] = useState(false);
 	const [fish, setFish] = useState(createFishObject);
 	const [activeButton, setActiveButton] = useState<string>('all');
 	const [fishCount, setFishCount] = useState(initialFishObj.length);
+	const [selectedValue, setSelectedValue] = useState('Select');
 
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect
@@ -77,12 +87,13 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 			setFishCount(monthFishCount);
 		}
 
-		if (filter === 'current') {
-			setActiveButton('current');
+		if (filter === 'now') {
+			setActiveButton('now');
 			setFish((prev) => {
 				return prev?.map((fish) => {
 					fish.display = false;
 					const availableTimes = fish['north']['times_by_month'][monthIndex];
+
 					if (availableTimes === 'NA') fish.display = false;
 					if (availableTimes === 'All day') fish.display = true;
 					if (
@@ -182,6 +193,49 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 		);
 	};
 
+	const handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+		console.log('event.target.value', event.target.value);
+		console.log('activeButton', activeButton);
+
+		setSelectedValue(event.target.value);
+		setFish((prev) => {
+			return prev.map((fish) => {
+				//handles all functionality working
+				if (activeButton === 'all') {
+					if (fish.location === event.target.value) {
+						fish.display = true;
+					} else {
+						fish.display = false;
+					}
+					if (event.target.value === 'Select') fish.display = true;
+				}
+
+				//handles month functionality working
+				if (activeButton === 'month') {
+					const availableTimes = fish['north']['times_by_month'][monthIndex];
+
+					if (fish.location === event.target.value && availableTimes !== 'NA') {
+						fish.display = true;
+					} else {
+						fish.display = false;
+					}
+
+					//handles 'select' option while on month
+					if (event.target.value === 'Select') {
+						fish.display = true;
+						if (availableTimes === 'NA') fish.display = false;
+					}
+				}
+
+				//handles current functionality
+				if (activeButton === 'now') {
+				}
+
+				return fish;
+			});
+		});
+	};
+
 	const activeButtonClass =
 		'px-7 py-1.5 my-1 border-3 border-[#4794ed] rounded w-30 tracking-wider text-[#4794ed]';
 	const inactiveButtonClass =
@@ -199,7 +253,7 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 						activeButton === 'all' ? activeButtonClass : inactiveButtonClass
 					}
 				>
-					All fish
+					ALL
 				</button>
 				<button
 					onClick={() => handleClick('month')}
@@ -207,35 +261,64 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 						activeButton === 'month' ? activeButtonClass : inactiveButtonClass
 					}
 				>
-					Monthly
+					MONTH
 				</button>
 				<button
-					onClick={() => handleClick('current')}
+					onClick={() => handleClick('now')}
 					className={
-						activeButton === 'current' ? activeButtonClass : inactiveButtonClass
+						activeButton === 'now' ? activeButtonClass : inactiveButtonClass
 					}
 				>
-					Current
+					NOW
 				</button>
+				<select
+					className="appearance-none bg-white px-3 py-3 my-2 pr-10 text-base text-black border border-gray-300 rounded cursor-pointer bg-no-repeat bg-right bg-size-[17px]"
+					style={{
+						backgroundImage: `url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/></svg>')`,
+						backgroundRepeat: 'no-repeat',
+						backgroundPosition: '94% 54%',
+					}}
+					name="triggerLevel"
+					id="trigger-level-select"
+					onChange={(e) => handleChange(e)}
+					value={selectedValue}
+				>
+					<option value={'Select'}>---Select Location---</option>
+					<option value={'Pond'}>Pond - 💧</option>
+					<option value={'River'}>River - 💦</option>
+					<option value={'River (mouth)'}>River mouth - 👄 + 💦</option>
+					<option value={'River (clifftop)'}>River clifftop - 🏔️ + 💦</option>
+					<option value={'Pier'}>Pier - ⚓️</option>
+					<option value={'Sea'}>Sea - 🌊</option>
+					<option value={'Sea (raining)'}>Sea raining - 🌧️ + 🌊</option>
+				</select>
 			</div>
-			<div className="pt-4 grid grid-cols-4">
+			<div className="pt-4 grid grid-cols-2 md:grid-cols-3">
 				{fish?.map((fish) => {
 					if (fish.display === true) {
 						return (
 							<div
-								className="flex items-center border-2 border-white px-3 py-3"
+								className="flex items-center border-2 border-white px-3 py-3 select-none"
 								key={fish['name']}
+								id={fish['name']}
 							>
-								<input
-									type="checkbox"
-									className={`h-5 w-5`}
-									id={fish.name}
-									value={fish.name}
-									name={fish.name}
-									checked={fish.checked}
-									onChange={(e) => handleCheckboxChange(e)}
-								/>
-								<p className="pl-2 text-sm">{fish['name']}</p>
+								{
+									<>
+										<input
+											type="checkbox"
+											className={`h-5 w-5`}
+											id={fish.name}
+											value={fish.name}
+											name={fish.name}
+											checked={fish.checked}
+											onChange={(e) => handleCheckboxChange(e)}
+										/>
+										<div className="pl-2 text-sm flex flex-row justify-between w-full">
+											<p>{fish['name'].toUpperCase()}</p>
+											<p>{fishEmoji[fish['location']]}</p>
+										</div>
+									</>
+								}
 							</div>
 						);
 					}
