@@ -32,6 +32,7 @@ const createFishObject = () => {
 export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	const monthIndex = monthNumber + 1;
 	const fourAMtoNinePM = times.slice(4, 21);
+	const fourPMtoNineAM = times.filter((time, i) => i >= 16 || i <= 9);
 	const nineAMtofourPM = times.slice(9, 16);
 	const ninePMtoElevenPM = times.slice(21, 24);
 	const twelveAMtoFourAM = times.slice(0, 4);
@@ -99,6 +100,12 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 					if (
 						availableTimes === '4 AM – 9 PM' &&
 						fourAMtoNinePM.includes(localTime)
+					) {
+						fish.display = true;
+					}
+					if (
+						availableTimes === '4 PM – 9 AM' &&
+						fourPMtoNineAM.includes(localTime)
 					) {
 						fish.display = true;
 					}
@@ -194,34 +201,33 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 	};
 
 	const handleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-		console.log('event.target.value', event.target.value);
-		console.log('activeButton', activeButton);
+		const { value } = event.target;
 
-		setSelectedValue(event.target.value);
+		setSelectedValue(value);
 		setFish((prev) => {
 			return prev.map((fish) => {
+				const availableTimes = fish['north']['times_by_month'][monthIndex];
+
 				//handles all functionality working
 				if (activeButton === 'all') {
-					if (fish.location === event.target.value) {
+					if (fish.location === value) {
 						fish.display = true;
 					} else {
 						fish.display = false;
 					}
-					if (event.target.value === 'Select') fish.display = true;
+					if (value === 'Select') fish.display = true;
 				}
 
 				//handles month functionality working
 				if (activeButton === 'month') {
-					const availableTimes = fish['north']['times_by_month'][monthIndex];
-
-					if (fish.location === event.target.value && availableTimes !== 'NA') {
+					if (fish.location === value && availableTimes !== 'NA') {
 						fish.display = true;
 					} else {
 						fish.display = false;
 					}
 
 					//handles 'select' option while on month
-					if (event.target.value === 'Select') {
+					if (value === 'Select') {
 						fish.display = true;
 						if (availableTimes === 'NA') fish.display = false;
 					}
@@ -229,6 +235,69 @@ export const FishList: FC<ChildProps> = ({ monthNumber, localTime }) => {
 
 				//handles current functionality
 				if (activeButton === 'now') {
+					fish.display = false;
+					const availableTimes = fish['north']['times_by_month'][monthIndex];
+
+					if (availableTimes === 'NA') fish.display = false;
+					if (availableTimes === 'All day' && fish.location === value)
+						fish.display = true;
+					if (
+						availableTimes === '4 AM – 9 PM' &&
+						fourAMtoNinePM.includes(localTime) &&
+						fish.location === value
+					) {
+						fish.display = true;
+					}
+					if (
+						availableTimes === '4 PM – 9 AM' &&
+						fourPMtoNineAM.includes(localTime) &&
+						fish.location === value
+					) {
+						fish.display = true;
+					}
+					if (
+						availableTimes === '9 AM – 4 PM' &&
+						nineAMtofourPM.includes(localTime) &&
+						fish.location === value
+					) {
+						fish.display = true;
+					}
+					if (
+						availableTimes === '9 PM – 4 AM' &&
+						ninePMtoFourAM.includes(localTime) &&
+						fish.location === value
+					) {
+						fish.display = true;
+					}
+
+					if (value === 'Select') {
+						if (availableTimes === 'NA') fish.display = false;
+						if (availableTimes === 'All day') fish.display = true;
+						if (
+							availableTimes === '4 AM – 9 PM' &&
+							fourAMtoNinePM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '4 PM – 9 AM' &&
+							fourPMtoNineAM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '9 AM – 4 PM' &&
+							nineAMtofourPM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+						if (
+							availableTimes === '9 PM – 4 AM' &&
+							ninePMtoFourAM.includes(localTime)
+						) {
+							fish.display = true;
+						}
+					}
 				}
 
 				return fish;
